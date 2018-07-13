@@ -2,3 +2,4 @@ fake_folder
 git.ignore
 gitignore
 venv/
+__pycache__/
