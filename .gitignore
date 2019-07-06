@@ -1,3 +1,5 @@
-fake_folder
-git.ignore
-gitignore
+pynbox
+db.sqlite3
+*.pyc
+SamingDev/settings.py
+SamingDev/settings.py

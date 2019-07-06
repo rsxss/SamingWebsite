@@ -1,7 +1,7 @@
 {% extends "NavBar.html" %}
 {% block content %}
 {% load static %}
-
+{% load group_tags %}
     <link rel="stylesheet" type="text/css" href="{% static '/grading_code/css/createroom.css' %}">
     <script src="{% static '/grading_code/js/popup.js' %}"></script>
 
@@ -10,7 +10,7 @@
     <!-- input assignment -->
     <div class="banner">
         <div class="nameclass">{{ classname }}</div>
-        <div class="nameadmin">Bawornsak sakulkueakulsuk</div>
+        <div class="nameadmin">{{ classroom_creator }}</div>
     </div>
 
     <div id="main">
@@ -20,11 +20,15 @@
         </script>
         {% elif add_status == 2 %}
         <script>
-            alert("Add Failed,Check your input email.");
+            alert("Failed,Check your input.");
         </script>
         {% elif add_status == 3 %}
         <script>
             alert("Deleted Success.");
+        </script>
+        {% elif add_status == 4 %}
+        <script>
+            alert("User can't be found in class.");
         </script>
     {% endif %}
         <div class="row">
@@ -33,10 +37,16 @@
 
 
                     <p>Teacher:</p>
-                    <p>Bawornsak sakulkueakulsuk</p>
+                    {% for i in user_group.teacher %}
+                        <p>{{ i.get_full_name }}</p>
+                    {% endfor %}
+                    <p>TA:</p>
+                    {% for j in user_group.ta %}
+                        <p>{{ j.get_full_name }}</p>
+                    {% endfor %}
                 </div>
-                {%  if request.user.is_admin %}
-                <button id="myBtn" class="boxadd">Add Admin</button>
+                {%  if request.user|can_manage:request.session.classroom %}
+                <button id="myBtn" class="boxadd">Manage</button>
                 {% endif %}
             </div>
 
@@ -47,25 +57,29 @@
                 </div>
                 <div class="boxassign2">
                     {%  if request.user.is_admin %}
-                    <button class="delete" onclick="location.href='{% url 'Class_Management:Assign_Management:DeleteAssign' i.id %}'">Delete</button>
-                    <button class="delete">Edit</button>
-                    <button class="delete" onclick="location.href='{% url 'Class_Management:Assign_Management:Uploadfile' i.id %}'">View</button>
+                    <input type="button" class="delete" onclick="window.open('{% url 'Class_Management:Assign_Management:MOSS' request.session.classroom i.id %}')" value="MOSS">
+                    <button class="delete" onclick="delQuiz('{% url 'Class_Management:Assign_Management:DeleteAssign' request.session.classroom i.id %}', '{{ i.quizTitle }}')" >Delete</button>
+                    <button class="delete" onclick="location.href='{% url 'Class_Management:Assign_Management:EditAssign' request.session.classroom i.id %}'">Edit</button>
+                    <button class="delete" onclick="location.href='{% url 'Class_Management:Assign_Management:Uploadfile' request.session.classroom i.id %}'">View</button>
                     {%  else %}
-                    <button class="delete" onclick="location.href='{% url 'Class_Management:Assign_Management:Uploadfile' i.id %}'">Open</button>
+                    <button class="delete" onclick="location.href='{% url 'Class_Management:Assign_Management:Uploadfile' request.session.classroom i.id %}'">Open</button>
                     {% endif %}
                     <div class="detail">
                         <p>Assignment name : {{ i.quizTitle }}</p>
                         <p>Hint: {{ i.hint }}</p>
+                        {% if i.quiztimer_set.all.0.timer %}
+                            <p>Time: {{ i.quiztimer_set.all.0.timer_stop }} </p>
+                        {% endif %}
                         <p>Deadline : {{ i.deadline }}</p>
                     </div>
                 </div>
                 {% endfor %}
 
-                {%  if request.user.is_admin %}
+                {%  if request.user|can_manage:request.session.classroom %}
                 <div class="tooltip">
                     <button1>
-                        <span class="tooltiptext">Create Quiz</span>
-                        <a href="/ClassRoom/Assignment/generate_assign/">
+                        <span class="tooltiptext">Quiz</span>
+                        <a href="{% url 'Class_Management:Assign_Management:GenerateAssign' request.session.classroom %}">
                             <img src="{% static '/grading_code/images/Pluss.png' %}" width="50" height="51" alt="">
                         </a>
                     </button1>
@@ -74,40 +88,49 @@
             </div>
         </div>
     </div>
+    {%  if request.user|can_manage:request.session.classroom %}
+        <div id="myModal" class="modal">
+            <!-- Modal content -->
+            <div class="modal-content">
+                <div class="modal-header">
+                    <span class="close">&times;</span>
+                    <h4>Manage</h4>
+                </div>
+                <div class="modal-body">
+                    <form method="post" enctype="multipart/form-data"> {% csrf_token %}
+                        <br>
+                        <label for="email" id="e_mail">Email:</label>
+                        <input type="text" id="email" name="firstemail" placeholder="Add e-mail..">
 
-    <div id="myModal" class="modal">
-        <!-- Modal content -->
-        <div class="modal-content">
-            <div class="modal-header">
-                <span class="close">&times;</span>
-                <h4>Add Admin</h4>
-            </div>
-            <div class="modal-body">
-                <form method="post"> {% csrf_token %}
-                    <br>
-                    <label for="email">Email:</label>
-                    <input type="text" id="email" name="firstemail" placeholder="Add e-mail..">
+                        <label for="test_case" id="t1" style="display:none">CSV:</label>
+                        <input type="file" name="upload_testcase" style="display:none" id="csv_file" />
+                        <input type="text" name="uploadtext_testcase" id="uploadtext_testcase" style="display:none" onkeydown="test_case.value=testtext_case.value" onchange="document.getElementById('uploadtext_testcase').value = this.value.split('\\').pop().split('/').pop()">
+                        <input type="button" name="uploadbutton" id="t3" value="Choose File" style="display:none" onclick="upload_testcase.click()" onmouseout="uploadtext_testcase.value=upload_testcase.value">
 
-                    <label for="country">Status:</label>
-                    <select id="country" name="country">
-                        <option value="Teacher"> Teacher</option>
-                        <option value="TA"> TA</option>
-                        <option value="Admin"> Admin</option>
-                    </select>
+                        <label for="country" id="status">Status:</label>
+                        <select id="country" name="country" onchange="validate();">
+                            <option value="Teacher"> Teacher</option>
+                            <option value="TA"> TA</option>
+                            {% if request.user.is_admin %}
+                            <option value="Admin"> Admin</option>
+                            <option value="CSV"> CSV User </option>
+                            {% endif %}
+                        </select>
 
-                    <label for="country">Action:</label>
-                    <select id="country" name="action">
-                        <option value="add"> Add</option>
-                        <option value="delete"> Delete</option>
-                    </select>
-                    <br></br>
-                    <input type="submit" name="add_status" value="PROCEED">
+                        <label for="country">Action:</label>
+                        <select id="country" name="action">
+                            <option value="add"> Add</option>
+                            <option value="delete"> Delete</option>
+                        </select>
+                        <br></br>
+                        <input type="submit" name="add_status" value="PROCEED">
 
-                    <br></br>
-                </form>
+                        <br></br>
+                    </form>
+                </div>
             </div>
         </div>
-    </div>
+    {% endif %}
 
     <script>
         // Get the modal
@@ -136,5 +159,43 @@
             }
         }
     </script>
-
+    <script>
+        function delQuiz(url,name) {
+            if (confirm("Delete "+name+' ?')){
+                location.href=url;
+                x = location.href;
+            }
+            else{
+                window.close();
+            }
+        }
+    </script>
+    <script>
+        function validate(){
+             var ddl = document.getElementById("country");
+             var selectedValue = ddl.options[ddl.selectedIndex].value;
+             var one = document.getElementById("t1");
+             var two = document.getElementById("uploadtext_testcase");
+             var three = document.getElementById("t3");
+             var four = document.getElementById("e_mail");
+             var five = document.getElementById("email");
+             console.log(selectedValue);
+                if (selectedValue == "CSV")
+               {
+                one.style.display = "block";
+                two.style.display = "block";
+                three.style.display = "block";
+                four.style.display = "none";
+                five.style.display = "none";
+                //alert("Please select a card type");
+               }
+               else{
+                     one.style.display = "none";
+                     two.style.display = "none";
+                     three.style.display = "none";
+                     four.style.display = "block";
+                     five.style.display = "block";
+               }
+            }
+    </script>
 {% endblock %}

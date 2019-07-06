@@ -21,18 +21,26 @@
                 {%  for i in quiz %}
                 <tr>
                     <td>
-                        <a href="{% url 'Class_Management:StudentQuizInfo' u_id.user_name i.id %}">{{ i.quizTitle }}</a>
+                        <a href="{% url 'Class_Management:StudentQuizListInfo' request.session.classroom u_id.user_name i.id %}">{{ i.quizTitle }}</a>
                     </td>
                     <td>{{ i.mode }}</td>
                     {% if i.mode == "Pass or Fail" %}
                         <td>{% u_score u_id.user_name i.classroom i i.mode %}</td>
-                        <td></td>
+                        <td>{% u_score u_id.user_name i.classroom i "Max" %}</td>
                     {% elif i.mode == "Scoring" %}
                         <td>{% u_score u_id.user_name i.classroom i i.mode %}</td>
                         <td>{% u_score u_id.user_name i.classroom i "Max" %}</td>
                 {% endif %}
                 </tr>
                 {% endfor %}
+            {% if quiz %}
+            <tr>
+            <td>Total Score</td>
+                <td></td>
+                <td>{{ totalscore }}</td>
+                <td>{{ maxscore }}</td>
+            </tr>
+            {% endif %}
             </table>
         </div>
     </div>

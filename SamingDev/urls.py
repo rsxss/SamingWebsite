@@ -23,14 +23,16 @@ from LogIn_Management import views
 
 
 urlpatterns = [
+    url(r'^$', views.LogIn_Page),
     url(r'^admin/', admin.site.urls),
+    url(r'^admin_panel/', views.Admin_Panel, name='admin_panel'),
     url(r'^reset/password_reset/$', auth_views.password_reset, name='reset_password_reset1'),
     url(r'^reset/password_reset/done/$', auth_views.password_reset_done, name='password_reset_done'),
     url(r'^reset/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>.+)/$', auth_views.password_reset_confirm, name='password_reset_confirm'),
     url(r'^reset/done/$', auth_views.password_reset_complete, name='password_reset_complete'),
     url(r'^accounts/login/$', views.LogIn_Page, name='Login'),
     url(r'^LogIn_Page/$', views.LogIn_Page),
-    url(r'^LogIn_Auth/$', views.LogIn_Auth),
+    #url(r'^LogIn_Auth/$', views.LogIn_Auth),
     url(r'^ClassRoom/', include('Class_Management.urls')),
     url(r'^Change_Password/$', views.Change_Password),
     url(r'^Forgot_Password/$', views.Forgot_Password),
@@ -42,5 +44,5 @@ urlpatterns = [
     url(r'^LogOut/$', auth_views.logout, {'next_page': '/'}, name='logout'),
 ]
 
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+#if settings.DEBUG:
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -1,0 +1,52 @@
+version: '3'
+
+services:
+  nginx:
+    build:
+      context: .
+      dockerfile: Dockerfile.nginx
+    container_name: docker_django_nginx
+    restart: always
+    ports:
+      - "80:80"
+    volumes:
+      - ./static:/code/static
+      - ./media:/code/media
+      - ./nginx/conf.d:/etc/nginx/conf.d
+    depends_on:
+      - web
+
+  db:
+    image: postgres:9.6-alpine
+    container_name: docker_django_db
+    restart: always
+    expose:
+      - "5432"
+    #ports:
+      #- "5433:5432"
+    environment:
+      - POSTGRES_USER = "postgres"
+      - POSTGRES_PASSWORD = "pengza78"
+      - POSTGRES_DB = "postgres"
+
+  web:
+    container_name: docker_django_container #container name
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: docker_django_image #image name
+    #command: python manage.py runserver 0.0.0.0:8000
+    restart: always
+    #command: uwsgi --ini SamingDev.ini
+    command: bash -c "gunicorn SamingDev.wsgi -b 0.0.0.0:8000 --workers 3"
+    volumes:
+      - .:/code
+      #- ./static:/code/static
+      #- ./media:/code/media
+      #- C:/Program Files/Python36/Lib:/code
+    #ports:
+    #- "8000:8000"
+    expose:
+      - "8000"
+    depends_on:
+    - db

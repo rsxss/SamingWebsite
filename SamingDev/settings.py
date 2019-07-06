@@ -25,7 +25,8 @@ SECRET_KEY = '$(dz!yau&t9ct!opo59%5m4(egv(vz&avl4=pu!qq+&$-o-jjm'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'web']
+# ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -38,10 +39,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'LogIn_Management.apps.LoginManagementConfig',
-    'bootstrap4',
     'Class_Management.apps.ClassManagementConfig',
     'Assign_Management.apps.AssignManagementConfig',
-    'mathfilters'
+    #'mathfilters'
 ]
 
 EMAIL_HOST = 'smtp.gmail.com'
@@ -75,7 +75,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'Class_Management.context_processors.quiz_processor',
+                #'Class_Management.context_processors.quiz_processor',
             ],
 
         },
@@ -89,10 +89,18 @@ WSGI_APPLICATION = 'SamingDev.wsgi.application'
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-    }
+                #'default': {
+                #    'ENGINE': 'django.db.backends.postgresql',
+                #    'NAME': 'postgres',
+                #   'USER': 'postgres',
+                #    'PASSWORD': 'pengza78',
+                #    'HOST': 'db',
+                #    'PORT': 5432
+                #}
+                'default': {
+                    'ENGINE': 'django.db.backends.sqlite3',
+                    'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+                }
 }
 
 
